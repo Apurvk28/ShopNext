@@ -1,0 +1,27 @@
+{
+  "name": "shopnext",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/Apurvk28/ShopNext#readme",
+  "bugs": {
+    "url": "https://github.com/Apurvk28/ShopNext/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Apurvk28/ShopNext.git"
+  },
+  "license": "ISC",
+  "author": "Apurv",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
+    "install": "concurrently \"cd backend && npm install\" \"cd frontend && npm install\"",
+    "build": "concurrently \"cd backend && npm run build\" \"cd frontend && npm run build\"",
+    "start": "concurrently \"cd backend && npm run start\" \"cd frontend && npm run start\"",
+    "test": "concurrently \"cd backend && npm run test\" \"cd frontend && npm run test\""
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.7"
+  }
+}
