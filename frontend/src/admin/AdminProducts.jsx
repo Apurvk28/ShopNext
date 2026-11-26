@@ -1,13 +1,19 @@
 import { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const AdminProducts = () => {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!user || user.role !== 'admin') {
+      navigate('/');
+      return;
+    }
+
     const fetchProducts = async () => {
       try {
         const res = await fetch('/api/products');
@@ -21,10 +27,10 @@ const AdminProducts = () => {
       }
     };
     fetchProducts();
-  }, []);
+  }, [user, navigate]);
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you strictly sure you want to delete this?')) {
+    if (window.confirm('Are you strictly sure you want to delete this product?')) {
       const res = await fetch(`/api/products/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${user.token}` }
@@ -34,6 +40,8 @@ const AdminProducts = () => {
       }
     }
   };
+
+  if (!user || user.role !== 'admin') return null;
 
   return (
     <div style={containerStyle}>

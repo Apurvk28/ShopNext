@@ -1,20 +1,31 @@
 import { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const AdminOrders = () => {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
+    if (!user || user.role !== 'admin') {
+      navigate('/');
+      return;
+    }
+
     const fetchOrders = async () => {
-      const res = await fetch('/api/orders', {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
-      const data = await res.json();
-      setOrders(Array.isArray(data) ? data : []);
+      try {
+        const res = await fetch('/api/orders', {
+          headers: { Authorization: `Bearer ${user.token}` }
+        });
+        const data = await res.json();
+        setOrders(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error(err);
+      }
     };
     fetchOrders();
-  }, [user]);
+  }, [user, navigate]);
 
   const updateStatus = async (id, status) => {
     const res = await fetch(`/api/orders/${id}/status`, {
@@ -26,6 +37,8 @@ const AdminOrders = () => {
       setOrders(orders.map(order => order._id === id ? { ...order, status } : order));
     }
   };
+
+  if (!user || user.role !== 'admin') return null;
 
   return (
     <div style={containerStyle}>
@@ -45,8 +58,8 @@ const AdminOrders = () => {
             {orders.map(order => (
               <tr key={order._id} style={rowStyle}>
                 <td style={tdStyle}>{order._id.substring(0, 8)}...</td>
-                <td style={tdStyle}>{order.userId?.name || 'Deleted User'}</td>
-                <td style={tdStyle}>₹{order.totalAmount.toFixed(2)}</td>
+                <td style={tdStyle}>{order.userId?.name || 'Customer'}</td>
+                <td style={tdStyle}>₹{Number(order.totalAmount || 0).toFixed(2)}</td>
                 <td style={tdStyle}>{new Date(order.createdAt).toLocaleDateString()}</td>
                 <td style={tdStyle}>
                   <select 

@@ -12,6 +12,11 @@ const EditProduct = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (!user || user.role !== 'admin') {
+      navigate('/');
+      return;
+    }
+
     const fetchProduct = async () => {
       try {
         const res = await fetch(`/api/products/${id}`);
@@ -31,7 +36,9 @@ const EditProduct = () => {
       }
     };
     fetchProduct();
-  }, [id]);
+  }, [id, user, navigate]);
+
+  if (!user || user.role !== 'admin') return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,15 +51,24 @@ const EditProduct = () => {
     data.append('stock', formData.stock);
     if (image) data.append('image', image);
 
-    const res = await fetch(`/api/products/${id}`, {
-      method: 'PUT',
-      headers: { Authorization: `Bearer ${user.token}` },
-      body: data
-    });
-    setLoading(false);
-    if (res.ok) {
-      alert('Product updated successfully!');
-      navigate('/admin/products');
+    try {
+      const res = await fetch(`/api/products/${id}`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${user.token}` },
+        body: data
+      });
+      if (res.ok) {
+        alert('Product updated successfully!');
+        navigate('/admin/products');
+      } else {
+        const errData = await res.json();
+        alert(errData.message || 'Error updating product');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error updating product');
+    } finally {
+      setLoading(false);
     }
   };
 

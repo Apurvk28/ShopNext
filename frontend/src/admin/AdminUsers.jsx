@@ -1,20 +1,33 @@
 import { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const AdminUsers = () => {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
+    if (!user || user.role !== 'admin') {
+      navigate('/');
+      return;
+    }
+
     const fetchUsers = async () => {
-      const res = await fetch('/api/auth/users', {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
-      const data = await res.json();
-      setUsers(Array.isArray(data) ? data : []);
+      try {
+        const res = await fetch('/api/auth/users', {
+          headers: { Authorization: `Bearer ${user.token}` }
+        });
+        const data = await res.json();
+        setUsers(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error(err);
+      }
     };
     fetchUsers();
-  }, [user]);
+  }, [user, navigate]);
+
+  if (!user || user.role !== 'admin') return null;
 
   return (
     <div style={containerStyle}>
