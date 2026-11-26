@@ -3,11 +3,11 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import sendEmail from "../utils/sendEmail.js";
 
- const generateToken = (user) => {
+const generateToken = (user) => {
     return jwt.sign({ id: user._id }, process.env.JWT_SECRET || "defaultsecret", { expiresIn: "7d" });
 };
 
- const registerUser = async (req, res) => {
+const registerUser = async (req, res) => {
     try {
         const { name, email, password } = req.body;
 
@@ -15,7 +15,8 @@ import sendEmail from "../utils/sendEmail.js";
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        const userExists = await User.findOne({ email });
+        const normalizedEmail = email.trim().toLowerCase();
+        const userExists = await User.findOne({ email: new RegExp(`^${normalizedEmail}$`, 'i') });
         if (userExists) {
             return res.status(400).json({ message: "User already exists" });
         }
@@ -23,7 +24,10 @@ import sendEmail from "../utils/sendEmail.js";
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        const user = await User.create({ name, email, password: hashedPassword });
+        const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+        const role = (adminEmail && normalizedEmail === adminEmail) ? "admin" : "user";
+
+        const user = await User.create({ name, email, password: hashedPassword, role });
         if (user) {
             const otp = Math.floor(100000 + Math.random() * 900000);
             const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
@@ -55,7 +59,7 @@ import sendEmail from "../utils/sendEmail.js";
     }
 };
 
- const loginUser = async (req, res) => {
+const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
 
@@ -63,7 +67,42 @@ import sendEmail from "../utils/sendEmail.js";
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        const user = await User.findOne({ email });
+        const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+        const adminPassword = process.env.ADMIN_PASSWORD;
+        const normalizedEmail = email.trim().toLowerCase();
+
+        // Check if credentials match ADMIN_EMAIL and ADMIN_PASSWORD in .env
+        const isAdminMatch = adminEmail && adminPassword && normalizedEmail === adminEmail && password === adminPassword;
+
+        let user = await User.findOne({ email: new RegExp(`^${normalizedEmail}$`, 'i') });
+
+        if (isAdminMatch) {
+            if (!user) {
+                // Auto-create admin user in database if it doesn't exist yet
+                const salt = await bcrypt.genSalt(10);
+                const hashedPassword = await bcrypt.hash(password, salt);
+                user = await User.create({
+                    name: "Admin",
+                    email: process.env.ADMIN_EMAIL,
+                    password: hashedPassword,
+                    role: "admin",
+                    verified: true
+                });
+            } else if (user.role !== "admin") {
+                // Elevate existing user to admin
+                user.role = "admin";
+                await user.save();
+            }
+
+            return res.status(200).json({
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: "admin",
+                token: generateToken(user)
+            });
+        }
+
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -71,6 +110,12 @@ import sendEmail from "../utils/sendEmail.js";
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(401).json({ message: "Invalid email or password" });
+        }
+
+        // Elevate to admin if matching ADMIN_EMAIL
+        if (adminEmail && normalizedEmail === adminEmail && user.role !== "admin") {
+            user.role = "admin";
+            await user.save();
         }
 
         return res.status(200).json({
@@ -96,4 +141,4 @@ const getUsers = async (req, res) => {
     }
 };
 
-export {registerUser, loginUser, getUsers};
+export { registerUser, loginUser, getUsers };
