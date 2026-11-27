@@ -84,49 +84,6 @@ flowchart TD
 
 To prevent client-side price tampering, **all prices and order totals are computed strictly on the server** by re-querying the database using item IDs and quantities before initializing an order with Razorpay.
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Customer as Customer (Browser)
-    participant Client as Frontend (Checkout.jsx)
-    participant Server as Backend (paymentController)
-    participant DB as MongoDB Atlas
-    participant Razorpay as Razorpay API
-    participant Mailer as Nodemailer (SMTP)
-
-    Customer->>Client: Click "Pay Now"
-    Client->>Server: POST /api/payment/order (items: [{ productId, qty }])
-    activate Server
-    Server->>DB: Query current product prices & stock
-    DB-->>Server: Return real DB records
-    Server->>Server: Validate stock & calculate authentic total in INR
-    Server->>Razorpay: razorpay.orders.create({ amount in paise, currency: "INR" })
-    Razorpay-->>Server: Return Razorpay Order Object (id, amount, currency)
-    Server-->>Client: Respond with order_id, key_id, calculatedTotal
-    deactivate Server
-
-    Client->>Razorpay: Initialize window.Razorpay(options).open()
-    Razorpay-->>Customer: Display Payment Modal (UPI, Cards, NetBanking)
-    Customer->>Razorpay: Authenticates & Authorizes Transaction
-    Razorpay-->>Client: Callback with razorpay_payment_id, razorpay_order_id, razorpay_signature
-
-    Client->>Server: POST /api/orders (items, address, paymentId, razorpay_order_id, razorpay_signature)
-    activate Server
-    Server->>Server: Compute expected HMAC-SHA256 signature
-    Server->>Server: crypto.timingSafeEqual(receivedSignature, expectedSignature)
-    
-    alt Signature Valid
-        Server->>DB: Atomically decrement product stock & save Order
-        Server->>Mailer: Send Order Confirmation Email with line items & receipt
-        Server-->>Client: 201 Created (Order confirmed)
-        Client->>Customer: Clear cart & Navigate to /ordersuccess
-    else Signature Invalid
-        Server-->>Client: 400 Bad Request (Payment verification failed)
-        Client->>Customer: Display Error Notification
-    end
-    deactivate Server
-```
-
 #### Cryptographic Verification Detail
 ```javascript
 // backend/src/controller/paymentController.js
@@ -147,17 +104,6 @@ const isSignatureValid = crypto.timingSafeEqual(
 ### 2. Cloudinary Media Management Pipeline
 
 Product images uploaded through the Admin panel are parsed via `multer` and streamed directly to Cloudinary's global Content Delivery Network (CDN), offloading file storage from the application server.
-
-```mermaid
-flowchart LR
-    A["Admin Panel (AddProduct.jsx)"] -->|"multipart/form-data"| B["Multer Middleware"]
-    B -->|"Local Temp File"| C["Cloudinary SDK (uploader.upload)"]
-    C -->|"Upload to 'shopnext_products'"| D["Cloudinary Cloud CDN"]
-    D -->|"Return secure_url"| E["productController.js"]
-    E -->|"Save HTTPS CDN Link"| F[("MongoDB Product Document")]
-    E -->|"Purge Temp File"| G["fs.unlinkSync()"]
-    F -->|"Optimized Web Delivery"| H["Customer Storefront"]
-```
 
 #### Upload Execution Detail
 ```javascript
