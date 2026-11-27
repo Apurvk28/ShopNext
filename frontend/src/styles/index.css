@@ -1,17 +1,54 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Outfit', sans-serif;
+@theme {
+  --color-background: #ffffff;
+  --color-foreground: #111827;
+  --color-muted-foreground: #4b5563;
+  --color-card: #ffffff;
+  --color-card-foreground: #111827;
+  --color-border: #e5e7eb;
+  --color-ring: #f97316;
+  --animate-marquee: marquee var(--duration) linear infinite;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
 }
 
-body {
-  background-color: #f8f9fa;
-  color: #111827;
-  min-height: 100vh;
-  overflow-x: hidden;
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+  }
+
+  body {
+    background-color: #f8f9fa;
+    color: #111827;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+  }
+
+  ul {
+    list-style: none;
+  }
+
+  h1, h2, h3, h4 {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 20px;
+    color: #111827;
+  }
+
+  h2 {
+    font-size: 2.2rem;
+    color: #111827;
+  }
 }
 
 .main-content {
@@ -20,16 +57,6 @@ body {
   max-width: 1400px;
   margin: 0 auto;
   animation: fadeIn 0.6s ease-in-out;
-}
-
-a {
-  text-decoration: none;
-  color: inherit;
-  transition: all 0.3s ease;
-}
-
-ul {
-  list-style: none;
 }
 
 /* Premium Buttons */
@@ -58,19 +85,6 @@ ul {
   transform: translateY(1px);
 }
 
-/* Base Headings */
-h1, h2, h3, h4 {
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  margin-bottom: 20px;
-  color: #111827;
-}
-
-h2 {
-  font-size: 2.2rem;
-  color: #111827;
-}
-
 /* Smooth Fade In */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
@@ -90,4 +104,40 @@ h2 {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8; 
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - var(--gap, 1rem)));
+  }
+}
+
+@keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(calc(-100% - var(--gap, 1rem)));
+  }
+}
+
+@keyframes scroll-up-smooth {
+  0% {
+    transform: translateY(0%);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes scroll-down-smooth {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0%);
+  }
 }

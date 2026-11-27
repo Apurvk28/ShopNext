@@ -39,6 +39,18 @@ const Login = () => {
   return (
     <div className="auth-container">
       <form onSubmit={handleSubmit} className="auth-form">
+        <img
+          src="/SmallSquareLogoJpg.jpg"
+          alt="ShopNext Logo"
+          style={{
+            height: '100px',
+            width: '100px',
+            borderRadius: '12px',
+            objectFit: 'contain',
+            margin: '0 auto 8px',
+            display: 'block',
+          }}
+        />
         <h2>Login</h2>
         <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />

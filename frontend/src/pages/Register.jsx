@@ -113,6 +113,18 @@ const Register = () => {
     <div className="auth-container">
       {step === 'register' ? (
         <form onSubmit={handleRegisterSubmit} className="auth-form">
+          <img
+            src="/SmallSquareLogoJpg.jpg"
+            alt="ShopNext Logo"
+            style={{
+              height: '72px',
+              width: '72px',
+              borderRadius: '12px',
+              objectFit: 'contain',
+              margin: '0 auto 8px',
+              display: 'block',
+            }}
+          />
           <h2>Register</h2>
           {errorMsg && (
             <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#dc2626', padding: '10px 14px', borderRadius: '8px', fontSize: '0.9rem', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
@@ -129,6 +141,18 @@ const Register = () => {
         </form>
       ) : (
         <form onSubmit={handleVerifyOtp} className="auth-form">
+          <img
+            src="/SmallSquareLogoJpg.jpg"
+            alt="ShopNext Logo"
+            style={{
+              height: '130px',
+              width: '130px',
+              borderRadius: '12px',
+              objectFit: 'contain',
+              margin: '0 auto 8px',
+              display: 'block',
+            }}
+          />
           <h2>Verify Email</h2>
           <p style={{ marginTop: 0, fontSize: '0.95rem', color: '#4b5563' }}>
             Enter the 6-digit OTP sent to <strong style={{ color: '#111827' }}>{email}</strong>

@@ -56,7 +56,7 @@ const AdminDashboard = () => {
   return (
     <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '5px' }}>
-        <img src="/logo.png" alt="Logo" style={{ height: '40px', width: '40px', borderRadius: '8px', objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(249, 115, 22, 0.25))' }} />
+        <img src="/Mainlogo.jpg" alt="Logo" style={{ height: '40px', width: '40px', borderRadius: '8px', objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(249, 115, 22, 0.25))' }} />
         <h2 style={{ margin: 0, color: '#111827' }}>Admin Dashboard</h2>
       </div>
       <p style={{ color: '#4b5563', marginBottom: '30px', fontSize: '1.1rem' }}>Welcome back, <span style={{color: '#111827', fontWeight: '600'}}>{user?.name}</span></p>
