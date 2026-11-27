@@ -1,25 +1,52 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import { useContext, useMemo } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import { AnimatedTicket } from "@/components/ui/ticket-confirmation-card";
 
 const OrderSuccess = () => {
-  const containerStyle = {
-    maxWidth: '600px',
-    margin: '50px auto',
-    padding: '50px 30px',
-    background: '#ffffff',
-    borderRadius: '16px',
-    border: '1px solid #e5e7eb',
-    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
-    textAlign: 'center'
-  };
+  const { user } = useContext(AuthContext);
+  const location = useLocation();
+  const state = location.state || {};
+
+  const orderMeta = useMemo(() => {
+    const fallbackCode = `SN${Date.now().toString().slice(-10)}`;
+    return {
+      orderId: state.orderId || fallbackCode,
+      amount: typeof state.amount === "number" ? state.amount : null,
+      date: state.date ? new Date(state.date) : new Date(),
+      customer: state.cardHolder || user?.name || "ShopNext Customer",
+      last4: state.last4Digits || "",
+      barcode: state.barcodeValue || `289372${Date.now().toString().slice(-8)}`,
+    };
+  }, [state, user]);
 
   return (
-    <div style={containerStyle}>
-      <h2 style={{ fontSize: '2.5rem', marginBottom: '20px', color: '#059669' }}>Payment Successful!</h2>
-      <p style={{ color: '#4b5563', fontSize: '1.2rem', marginBottom: '40px' }}>
-        Thank you for your order. We have securely received your payment and will process your shipment shortly.
-      </p>
-      <Link to="/shop" className="btn">Continue Shopping</Link>
+    <div className="flex min-h-[75vh] w-full items-center justify-center px-4 py-12">
+      
+      <AnimatedTicket
+        ticketId={orderMeta.orderId}
+        amount={orderMeta.amount}
+        date={orderMeta.date}
+        cardHolder={orderMeta.customer}
+        last4Digits={orderMeta.last4}
+        barcodeValue={orderMeta.barcode}
+        title="Payment Successful!"
+        subtitle="Thank you for your order. We are preparing your shipment."
+        idLabel="Order ID"
+        footer={
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link to="/shop" className="btn flex-1 text-center">
+              Continue Shopping
+            </Link>
+            <Link
+              to="/profile"
+              className="flex-1 inline-flex items-center justify-center rounded-lg border border-[#e5e7eb] bg-white px-4 py-3 text-sm font-semibold text-[#111827] hover:bg-[#f9fafb] transition-colors"
+            >
+              View Orders
+            </Link>
+          </div>
+        }
+      />
     </div>
   );
 };

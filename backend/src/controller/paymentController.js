@@ -11,7 +11,7 @@ const createOrder = async (req, res) => {
             return res.status(500).json({ message: "Payment gateway credentials not configured" });
         }
 
-        const { items, amount } = req.body;
+        const { items, amount, promoCode } = req.body;
         let calculatedTotal = 0;
 
         // Strictly calculate price on the server side if items array is passed
@@ -46,6 +46,10 @@ const createOrder = async (req, res) => {
             calculatedTotal = amount;
         } else {
             return res.status(400).json({ message: "No items or valid amount provided" });
+        }
+
+        if (typeof promoCode === "string" && promoCode.trim().toUpperCase() === "NEXT20" && calculatedTotal > 1999) {
+            calculatedTotal -= Math.round(calculatedTotal * 0.2);
         }
 
         if (calculatedTotal <= 0) {

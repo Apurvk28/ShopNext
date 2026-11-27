@@ -6,7 +6,7 @@ import sendEmail from "../utils/sendEmail.js";
 const addOrderItems = async (req, res) => {
   const deductedStockItems = [];
   try {
-    const { items, address, paymentId, razorpay_order_id, razorpay_signature } = req.body;
+    const { items, address, paymentId, razorpay_order_id, razorpay_signature, promoCode } = req.body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: "No order items provided" });
@@ -102,6 +102,10 @@ const addOrderItems = async (req, res) => {
     }
 
     // 5. Create Order with Server-Calculated Pricing
+    if (typeof promoCode === "string" && promoCode.trim().toUpperCase() === "NEXT20" && calculatedTotal > 1999) {
+      calculatedTotal -= Math.round(calculatedTotal * 0.2);
+    }
+
     const order = new Order({
       userId: req.user._id,
       items: verifiedItems,

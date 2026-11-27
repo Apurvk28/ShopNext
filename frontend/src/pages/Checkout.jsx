@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { clearCart } from '../redux/cartSlice';
+import { evaluatePromo } from '../utils/promo';
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -23,6 +24,7 @@ const Checkout = () => {
   const { user } = useContext(AuthContext);
   const { showToast } = useToast();
   const cartItems = useSelector((state) => state?.cart?.cartItems || []);
+  const promoCode = useSelector((state) => state?.cart?.promoCode || null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -40,10 +42,12 @@ const Checkout = () => {
 
   if (!user) return null;
 
-  const totalPrice = cartItems.reduce(
+  const subtotal = cartItems.reduce(
     (acc, item) => acc + (Number(item.price) || 0) * (Number(item.qty) || 1),
     0
   );
+  const promoResult = promoCode ? evaluatePromo(promoCode, subtotal) : { valid: false, discountAmount: 0, finalTotal: subtotal };
+  const totalPrice = promoResult.valid ? promoResult.finalTotal : subtotal;
 
   const handlePayment = async () => {
     setLoading(true);
@@ -66,7 +70,8 @@ const Checkout = () => {
           items: cartItems.map((item) => ({
             productId: item._id || item.productId,
             qty: Number(item.qty) || 1
-          }))
+          })),
+          promoCode: promoResult.valid ? promoCode : undefined
         })
       });
 
@@ -99,6 +104,7 @@ const Checkout = () => {
                   productId: item._id || item.productId,
                   qty: Number(item.qty) || 1
                 })),
+                promoCode: promoResult.valid ? promoCode : undefined,
                 address,
                 paymentId: response.razorpay_payment_id,
                 razorpay_order_id: response.razorpay_order_id,
@@ -206,7 +212,12 @@ const Checkout = () => {
             onChange={(e) => setAddress({...address, country: e.target.value})}
           />
           <div className="checkout-summary">
-            <h4>Estimated Total: ₹{totalPrice.toFixed(2)}</h4>
+            {promoResult.valid && (
+              <p className="text-sm text-[#059669] font-medium mb-1">
+                Subtotal: ₹{subtotal.toFixed(2)} · Promo ({promoCode}): -₹{promoResult.discountAmount.toFixed(2)}
+              </p>
+            )}
+            <h4>Total Payable: ₹{totalPrice.toFixed(2)}</h4>
             <button type="submit" className="btn" disabled={loading}>
               {loading ? 'Processing Payment...' : 'Pay Now'}
             </button>
