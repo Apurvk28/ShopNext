@@ -1,7 +1,8 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { clearCart } from '../redux/cartSlice';
 
 const loadRazorpayScript = () => {
@@ -20,6 +21,7 @@ const loadRazorpayScript = () => {
 
 const Checkout = () => {
   const { user } = useContext(AuthContext);
+  const { showToast } = useToast();
   const cartItems = useSelector((state) => state?.cart?.cartItems || []);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -28,6 +30,15 @@ const Checkout = () => {
     fullName: '', street: '', city: '', postalCode: '', country: ''
   });
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      showToast('Please login or signup to proceed to checkout.', 'warning');
+      navigate('/login');
+    }
+  }, [user, navigate, showToast]);
+
+  if (!user) return null;
 
   const totalPrice = cartItems.reduce(
     (acc, item) => acc + (Number(item.price) || 0) * (Number(item.qty) || 1),
@@ -39,7 +50,7 @@ const Checkout = () => {
     try {
       const isLoaded = await loadRazorpayScript();
       if (!isLoaded) {
-        alert('Razorpay SDK failed to load. Please check your internet connection.');
+        showToast('Razorpay SDK failed to load. Please check your internet connection.', 'error');
         setLoading(false);
         return;
       }
@@ -62,7 +73,7 @@ const Checkout = () => {
       const orderData = await orderRes.json();
 
       if (!orderRes.ok) {
-        alert(orderData.message || 'Payment initialization failed on server.');
+        showToast(orderData.message || 'Payment initialization failed on server.', 'error');
         setLoading(false);
         return;
       }
@@ -101,11 +112,11 @@ const Checkout = () => {
               dispatch(clearCart());
               navigate('/ordersuccess');
             } else {
-              alert(savedOrderData.message || 'Order confirmation failed. Please contact support.');
+              showToast(savedOrderData.message || 'Order confirmation failed. Please contact support.', 'error');
             }
           } catch (err) {
             console.error('Order Save Error:', err);
-            alert('Error processing order confirmation.');
+            showToast('Error processing order confirmation.', 'error');
           } finally {
             setLoading(false);
           }
@@ -127,13 +138,13 @@ const Checkout = () => {
 
       const rzp1 = new window.Razorpay(options);
       rzp1.on('payment.failed', function (resp) {
-        alert('Payment failed: ' + (resp?.error?.description || 'Transaction unsuccessful'));
+        showToast('Payment failed: ' + (resp?.error?.description || 'Transaction unsuccessful'), 'error');
         setLoading(false);
       });
       rzp1.open();
     } catch (error) {
       console.error(error);
-      alert('Error initiating checkout: ' + error.message);
+      showToast('Error initiating checkout: ' + error.message, 'error');
       setLoading(false);
     }
   };
@@ -141,12 +152,12 @@ const Checkout = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!user) {
-      alert("Please login first to complete your purchase");
+      showToast("Please login first to complete your purchase", "warning");
       navigate('/login');
       return;
     }
     if (cartItems.length === 0) {
-      alert("Your cart is empty!");
+      showToast("Your cart is empty!", "warning");
       navigate('/shop');
       return;
     }

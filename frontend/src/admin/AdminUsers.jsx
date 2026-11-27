@@ -31,7 +31,7 @@ const AdminUsers = () => {
 
   return (
     <div style={containerStyle}>
-      <h2 style={{ color: '#f97316', marginBottom: '20px' }}>User Directory</h2>
+      <h2 style={{ color: '#ea580c', marginBottom: '20px' }}>User Directory</h2>
       <div style={{ overflowX: 'auto' }}>
         <table style={tableStyle}>
           <thead>
@@ -50,7 +50,7 @@ const AdminUsers = () => {
                 <td style={tdStyle}>{u.name}</td>
                 <td style={tdStyle}>{u.email}</td>
                 <td style={tdStyle}>
-                  <span style={{ background: u.role === 'admin' ? 'rgba(234,88,12,0.2)' : 'rgba(16,185,129,0.2)', color: u.role === 'admin' ? '#f97316' : '#10b981', padding: '4px 8px', borderRadius: '4px', fontSize: '0.85rem', fontWeight: 'bold' }}>
+                  <span style={{ background: u.role === 'admin' ? 'rgba(234,88,12,0.1)' : 'rgba(16,185,129,0.1)', color: u.role === 'admin' ? '#ea580c' : '#059669', padding: '4px 8px', borderRadius: '4px', fontSize: '0.85rem', fontWeight: 'bold' }}>
                     {u.role.toUpperCase()}
                   </span>
                 </td>
@@ -64,10 +64,10 @@ const AdminUsers = () => {
   );
 };
 
-const containerStyle = { maxWidth: '1200px', margin: '40px auto', padding: '30px', background: '#18181b', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', color: '#fafafa' };
+const containerStyle = { maxWidth: '1200px', margin: '40px auto', padding: '30px', background: '#ffffff', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', color: '#111827' };
 const tableStyle = { width: '100%', borderCollapse: 'collapse' };
-const rowStyle = { borderBottom: '1px solid rgba(255,255,255,0.1)' };
-const thStyle = { padding: '15px', textAlign: 'left', color: '#a1a1aa', fontSize: '0.9rem' };
-const tdStyle = { padding: '15px', textAlign: 'left' };
+const rowStyle = { borderBottom: '1px solid #e5e7eb' };
+const thStyle = { padding: '15px', textAlign: 'left', color: '#4b5563', fontSize: '0.9rem' };
+const tdStyle = { padding: '15px', textAlign: 'left', color: '#111827' };
 
 export default AdminUsers;

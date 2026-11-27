@@ -1,9 +1,11 @@
 import { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 
 const AddProduct = () => {
   const { user } = useContext(AuthContext);
+  const { showToast } = useToast();
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
@@ -19,7 +21,7 @@ const AddProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!image) return alert('Please select an image');
+    if (!image) return showToast('Please select an image', 'warning');
     
     setLoading(true);
     const data = new FormData();
@@ -39,10 +41,10 @@ const AddProduct = () => {
       const responseData = await res.json();
       
       if (res.ok) {
-        alert('Product created successfully with Cloudinary Image URL!');
+        showToast('Product created successfully with Cloudinary Image URL!', 'success');
         navigate('/shop');
       } else {
-        alert(responseData.message || 'Error creating product');
+        showToast(responseData.message || 'Error creating product', 'error');
       }
     } catch (error) {
       console.error(error);
@@ -52,8 +54,8 @@ const AddProduct = () => {
   };
 
   return (
-    <div style={{ maxWidth: '600px', margin: '40px auto', background: '#18181b', padding: '40px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-      <h2 style={{ color: '#f97316', marginBottom: '20px' }}>Add New Product</h2>
+    <div style={{ maxWidth: '600px', margin: '40px auto', background: '#ffffff', padding: '40px', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+      <h2 style={{ color: '#ea580c', marginBottom: '20px' }}>Add New Product</h2>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         <input 
           type="text" placeholder="Product Name" required 
@@ -81,12 +83,12 @@ const AddProduct = () => {
           style={inputStyle} 
         />
         
-        <div style={{ padding: '15px', border: '1px dashed #f97316', borderRadius: '8px' }}>
-          <label style={{ display: 'block', marginBottom: '10px', color: '#a1a1aa' }}>Upload Product Image (Cloudinary)</label>
+        <div style={{ padding: '15px', border: '1px dashed #ea580c', background: '#fff7ed', borderRadius: '8px' }}>
+          <label style={{ display: 'block', marginBottom: '10px', color: '#4b5563', fontWeight: '500' }}>Upload Product Image (Cloudinary)</label>
           <input 
             type="file" accept="image/*" required 
             onChange={(e) => setImage(e.target.files[0])} 
-            style={{ color: '#fff' }}
+            style={{ color: '#111827' }}
           />
         </div>
 
@@ -100,10 +102,10 @@ const AddProduct = () => {
 
 const inputStyle = {
   padding: '12px',
-  background: '#09090b',
-  border: '1px solid #27272a',
+  background: '#ffffff',
+  border: '1px solid #d1d5db',
   borderRadius: '6px',
-  color: '#fff',
+  color: '#111827',
   fontSize: '15px',
   outline: 'none'
 };

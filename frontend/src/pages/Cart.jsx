@@ -1,9 +1,14 @@
+import { useContext } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { removeFromCart, addToCart } from '../redux/cartSlice';
 import '../styles/cart.css';
 
 const Cart = () => {
+  const { user } = useContext(AuthContext);
+  const { showToast } = useToast();
   const cartItems = useSelector((state) => state?.cart?.cartItems || []);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -14,7 +19,7 @@ const Cart = () => {
 
   const handleUpdateQty = (item, qty) => {
     if (typeof item.stock === 'number' && qty > item.stock) {
-      alert(`Cannot add more. Only ${item.stock} items available in stock!`);
+      showToast(`Cannot add more. Only ${item.stock} items available in stock!`, 'warning');
       return;
     }
 
@@ -27,6 +32,15 @@ const Cart = () => {
     (acc, item) => acc + (Number(item.price) || 0) * (Number(item.qty) || 1),
     0
   );
+
+  const handleCheckout = () => {
+    if (!user) {
+      showToast('Please login or signup to proceed to checkout.', 'warning');
+      navigate('/login');
+      return;
+    }
+    navigate('/checkout');
+  };
 
   return (
     <div className="cart-container">
@@ -72,7 +86,7 @@ const Cart = () => {
           </div>
           <div className="cart-summary">
             <h3>Total: ₹{totalPrice.toFixed(2)}</h3>
-            <button onClick={() => navigate('/checkout')} className="btn btn-checkout">Proceed to Checkout</button>
+            <button onClick={handleCheckout} className="btn btn-checkout">Proceed to Checkout</button>
           </div>
         </div>
       )}

@@ -1,12 +1,14 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import '../styles/auth.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useContext(AuthContext);
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -20,12 +22,17 @@ const Login = () => {
       const data = await res.json();
       if (res.ok) {
         login(data);
+        showToast('Logged in successfully!', 'success');
         navigate('/');
+      } else if (res.status === 403 && data.requiresVerification) {
+        showToast(data.message, 'warning');
+        navigate('/register', { state: { emailToVerify: data.email } });
       } else {
-        alert(data.message);
+        showToast(data.message || 'Invalid credentials', 'error');
       }
     } catch (error) {
       console.error(error);
+      showToast('Network error: Unable to reach the server. Please try again.', 'error');
     }
   };
 
